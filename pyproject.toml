@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "DeFT"
+name = "deft"
 version = "0.0.1"
 description = "project for DeFT"
 authors = ["Jinwei Yao <jinwei.yao1114@gmail.com>"]
