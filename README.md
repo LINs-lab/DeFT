@@ -1,8 +1,15 @@
+<div align="center">
+<img src="assets/DeFT.jpeg" alt="logo" width="200"></img>
+</div>
+
+--------------------------------------------------------------------------------
+
 # DeFT: Decoding with Flash Tree-attention for Efficient Tree-structured LLM Inference
 
 [[paper](https://arxiv.org/abs/2404.00242)] [[slides](placeholder)][[video](placeholder)]
 
-![schemes](assets/DeFT.jpeg)
+<!-- ![schemes](assets/DeFT.jpeg) -->
+
 
 [Placeholder for video link]
 
