@@ -6,7 +6,6 @@ from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 logger = logging.getLogger(__name__)
 
 
-logger.info('Building extensions')
 ext_modules = []
 ext_modules.append(
     CUDAExtension(
@@ -20,7 +19,6 @@ ext_modules.append(
 
 
 def build(setup_kwargs: Dict[str, Any]) -> None:
-    logger.info('Building extensions')
     setup_kwargs.update(
         {
             'ext_modules': ext_modules,

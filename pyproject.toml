@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.build]
 script = "build.py"
-generate-setup-file = true
+generate-setup-file = false
 
 
 [tool.poetry.dependencies]
