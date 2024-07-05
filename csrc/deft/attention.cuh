@@ -21,4 +21,5 @@ namespace deft {
 		dim3 grid((size + block.x - 1) / block.x);
 		dummy_kernel<<<grid, block>>>(output, input, size);
 	}
+
 }

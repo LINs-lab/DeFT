@@ -45,7 +45,7 @@ CUDA_VISIBLE_DEVICES=0 python examples/
 ## FAQ
 
 1. **What is the difference between two versions of DeFT papers in arXiv?**
-   
+
     DeFT-v1
 
 

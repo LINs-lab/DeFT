@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.23.1)
-project(deft 
+project(deft
 		VERSION 2024
 		DESCRIPTION "An IO-aware fast attention kernel for efficient tree-structured interactions with LLMs"
 		LANGUAGES CUDA CXX)
@@ -32,4 +32,3 @@ if(DEFT_ENABLE_TESTS)
   target_link_libraries(test_dummy gtest_main gtest)
   add_test(NAME test_dummy COMMAND test_dummy)
 endif()
-

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "deft/attention.h"
+#include "deft/attention.cuh"
 #include <cuda_runtime.h>
 #include <iostream>
 
@@ -24,9 +24,9 @@ TEST(Attention, Dummy) {
 
 	cudaMalloc(&input_device, size * sizeof(float));
 	cudaMalloc(&output_device, size * sizeof(float));
-	
+
 	init(input_device, size);
-	
+
 	deft::dummy(output_device, input_device, size);
 
 	cudaMemcpy(output_host, output_device, size * sizeof(float), cudaMemcpyDeviceToHost);
@@ -34,7 +34,7 @@ TEST(Attention, Dummy) {
 	for (int i = 0; i < size; i++) {
 		EXPECT_EQ(output_host[i], i);
 	}
-	
+
 	cudaFree(input_device);
 	cudaFree(output_device);
 	delete[] output_host;
