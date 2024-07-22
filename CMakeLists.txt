@@ -6,6 +6,8 @@ project(deft
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 find_package(Python3 REQUIRED)
 find_package(CUDAToolkit REQUIRED)
