@@ -131,9 +131,8 @@ template <uint32_t num_stages_smem, uint32_t tile_size_per_bdx,
           uint32_t vec_size, uint32_t bdx, uint32_t bdy, uint32_t bdz,
           uint32_t block_q>
 __global__ void deft_attention_stage_1_paged_kernel(
-    const thrust::device_vector<chunk_t>& chunks,
-    float* __restrict__ partial_lse, float* __restrict__ partial_o,
-    float* __restrict__ row_max,
+    const chunk_t* chunks, float* __restrict__ partial_lse,
+    float* __restrict__ partial_o, float* __restrict__ row_max,
     tensor_info_t info, float sm_scale) {
   auto block = cg::this_thread_block();
   auto grid = cg::this_grid();
@@ -143,7 +142,7 @@ __global__ void deft_attention_stage_1_paged_kernel(
   const uint32_t qo_head_idx = blockIdx.y * bdy + threadIdx.y;
   const uint32_t num_qo_heads = gridDim.y * bdy;
   const uint32_t chunk_idx = blockIdx.x;
-  const chunk_t chunk = static_cast<chunk_t>(chunks[chunk_idx]);
+  const chunk_t& chunk = chunks[chunk_idx];
   const uint32_t kv_chunk_len = chunk.kv_len;
   const uint32_t q_chunk_len = chunk.q_len;
 
@@ -330,15 +329,14 @@ __global__ void deft_attention_stage_1_paged_kernel(
 }
 template <uint32_t vec_size, uint32_t bdx>
 __global__ void deft_attention_reduction_kernel(
-    const thrust::device_vector<chunk_t>& chunks, DTypeOut* __restrict__ o,
-    float* __restrict__ L, float* __restrict__ row_max,
-    const float* __restrict__ partial_lse, const float* __restrict__ partial_o,
-    tensor_info_t info) {
+    const chunk_t* chunks, DTypeOut* __restrict__ o, float* __restrict__ L,
+    float* __restrict__ row_max, const float* __restrict__ partial_lse,
+    const float* __restrict__ partial_o, tensor_info_t info) {
   auto block = cg::this_thread_block();
   auto grid = cg::this_grid();
   const uint32_t head_dim = bdx * vec_size;
   const uint32_t chunk_idx = blockIdx.x;
-  const chunk_t chunk = static_cast<chunk_t>(chunks[chunk_idx]);
+  const chunk_t chunk = chunks[chunk_idx];
   const uint32_t q_chunk_len = chunk.q_len;
   const uint32_t qo_head_idx = blockIdx.y;
   const uint32_t tx = threadIdx.x;
@@ -383,10 +381,8 @@ __global__ void deft_attention_reduction_kernel(
 
 cudaError_t deft_attention(DTypeOut* o,
                            const thrust::device_vector<chunk_t>& chunks,
-                           float* partial_lse,
-                           float* partial_o, uint32_t partial_num,
-                           tensor_info_t info, float sm_scale,
-                           cudaStream_t stream) {
+                           uint32_t partial_num, tensor_info_t info,
+                           float sm_scale, cudaStream_t stream) {
   const uint32_t num_qo_heads = info.num_qo_heads;
   const uint32_t num_kv_heads = info.num_kv_heads;
   constexpr uint32_t HEAD_DIM = 128;
@@ -410,10 +406,17 @@ cudaError_t deft_attention(DTypeOut* o,
       std::max(tile_size_per_bdx * num_threads * sizeof(DTypeKV*),
                2 * bdy * bdz * sizeof(float));
 
-  thrust::device_vector<float> L(num_qo_heads * info.qo_len);
-  thrust::device_vector<float> row_max(num_qo_heads * info.qo_len);
+  thrust::device_vector<float> L(num_qo_heads * info.qo_len, 0.0);
+  thrust::device_vector<float> row_max(num_qo_heads * info.qo_len, 0.0);
+  thrust::device_vector<float> partial_lse(num_qo_heads * partial_num, 0.0);
+  thrust::device_vector<float> partial_o(num_qo_heads * partial_num * HEAD_DIM,
+                                         0.0);
+
   auto L_ptr = L.data().get();
   auto row_max_ptr = row_max.data().get();
+  auto partial_lse_ptr = partial_lse.data().get();
+  auto partial_o_ptr = partial_o.data().get();
+  auto chunk_ptr = chunks.data().get();
   dim3 block(bdx, bdy, bdz);
   dim3 grid(chunks.size(), num_kv_heads);
   auto stage_1_kernel =
@@ -422,18 +425,16 @@ cudaError_t deft_attention(DTypeOut* o,
   auto reduction_kernel = deft_attention_reduction_kernel<4, HEAD_DIM / 4>;
   FLASHINFER_CUDA_CALL(cudaFuncSetAttribute(
       stage_1_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, smem_size));
-  stage_1_kernel<<<grid, block, smem_size, stream>>>(chunks, partial_lse,
-                                                     partial_o, row_max_ptr, info, sm_scale);
+  stage_1_kernel<<<grid, block, smem_size, stream>>>(
+      chunk_ptr, partial_lse_ptr, partial_o_ptr, row_max_ptr, info, sm_scale);
 
   void* args[] = {
-      const_cast<void *>(reinterpret_cast<const void *>(&chunks)), &o, &L_ptr, &row_max_ptr, &partial_lse,
-      &partial_o, &info,
+      &chunk_ptr,     &o,    &L_ptr, &row_max_ptr, &partial_lse_ptr,
+      &partial_o_ptr, &info,
   };
-  // reduction_kernel<<<1, num_threads, 0, stream>>>(
-  //     chunks, o, L.data().get(), row_max.data().get(), partial_lse, partial_o, info);
-  FLASHINFER_CUDA_CALL(
-    cudaLaunchCooperativeKernel((void*)reduction_kernel, dim3(chunks.size(), num_qo_heads), dim3(HEAD_DIM / 4), args, 0, stream)
-  )
+  FLASHINFER_CUDA_CALL(cudaLaunchCooperativeKernel(
+      (void*)reduction_kernel, dim3(chunks.size(), num_qo_heads),
+      dim3(HEAD_DIM / 4), args, 0, stream))
   return cudaSuccess;
 }
 
