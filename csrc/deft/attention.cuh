@@ -368,8 +368,8 @@ __global__ void deft_attention_reduction_kernel(
         tx * vec_size;
     vec_t<float, vec_size> o_vec;
     o_vec.cast_load(partial_o_ptr);
-    DTypeOut* o_ptr = o + qo_head_idx * info.qo_stride_h +
-                      global_q_idx * info.qo_stride_n + tx * vec_size;
+    DTypeOut* o_ptr = o + qo_head_idx * info.q_stride_h +
+                      global_q_idx * info.q_stride_n + tx * vec_size;
 #pragma unroll
     for (uint32_t i = 0; i < vec_size; ++i) {
       o_vec[i] *= new_exp;
