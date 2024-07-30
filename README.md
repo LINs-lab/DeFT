@@ -48,6 +48,7 @@ CUDA_VISIBLE_DEVICES=0 python examples/
 <!-- We profile DeFT kernel performance with [nvbench](https://github.com/NVIDIA/nvbench) and you can compile and run the benchmarks with the following commands: -->
 
 ```bash
+git submodule update --init --recursive # clone flashinfer
 cmake -B build
 cmake --build build
 cd build

@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "deft/attention.cuh"
+#include "flashinfer_ops.cuh"
 
 constexpr uint32_t chunk_size = 256;
 constexpr uint32_t branch_size = 10;
@@ -18,6 +19,8 @@ typedef half DTypeQ;
 typedef half DTypeKV;
 typedef half DTypeO;
 typedef uint32_t IdType;
+
+using namespace flashinfer;
 
 __global__ void init_chunks(deft::chunk_t* chunks, uint32_t* q_idx[],
                             uint32_t* q_len, uint32_t* kv_idx[],
@@ -73,8 +76,6 @@ TEST(Attention, DeftNodeKernel) {
     kv_idx_ptr[i] = kv_idx[i].data().get();
     q_len[i] = q_idx[i].size();
     kv_len[i] = kv_idx[i].size();
-    // printf("%d: q_len = %d, kv_len = %d, q_idx = %x, kv_idx = %x\n", i,
-    //        q_len[i], kv_len[i], q_idx_ptr[i], kv_idx_ptr[i]);
   }
 
   cudaMemcpy(d_q_idx_ptr, q_idx_ptr, chunk_num * sizeof(uint32_t*),
