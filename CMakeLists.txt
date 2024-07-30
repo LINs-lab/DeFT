@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.23.1)
+project(deft
+		VERSION 2024
+		DESCRIPTION "An IO-aware fast attention kernel for efficient tree-structured interactions with LLMs"
+		LANGUAGES CUDA CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(FLASHINFER_DIR ${PROJECT_SOURCE_DIR}/3rdparty/flashinfer)
+set(FLASHINFER_INCLUDE_DIR ${FLASHINFER_DIR}/include)
+
+add_subdirectory(${FLASHINFER_DIR})
+
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -g -lineinfo -Xptxas -v -lineinfo")
+find_package(Python3 REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+if(NOT Python3_FOUND)
+  message(FATAL_ERROR "Python3 not found.")
+endif()
+if(NOT CUDAToolkit_FOUND)
+  message(FATAL_ERROR "CUDA not found.")
+endif()
+message(STATUS "Python3 found at ${Python3_EXECUTABLE}")
+message(STATUS "CUDA version is ${CUDAToolkit_VERSION}")
+set(DEFT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/csrc)
+include_directories(${DEFT_SOURCE_DIR})
+include_directories(${CUDAToolkit_INCLUDE_DIRS})
+include_directories(${FLASHINFER_INCLUDE_DIR})
+
+link_directories(${CUDAToolkit_LIBRARY_DIR})
+
+set(DEFT_ENABLE_TESTS CACHE BOOL "Enable tests for DEFT" ON)
+
+if(DEFT_ENABLE_TESTS)
+  enable_testing()
+  set(DEFT_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests/csrc)
+  file(GLOB_RECURSE TEST_DUMMY_SRC ${DEFT_TEST_SOURCE_DIR}/test_dummy.cu)
+  add_executable(test_dummy ${TEST_DUMMY_SRC})
+  target_link_libraries(test_dummy gtest_main gtest)
+  target_link_libraries(test_dummy ${CUDAToolkit_LIBRARIES})
+  add_test(NAME test_dummy COMMAND test_dummy)
+
+  file(GLOB_RECURSE TEST_DEFT_SRC ${DEFT_TEST_SOURCE_DIR}/test_deft_attention.cu)
+  add_executable(test_deft_attention ${TEST_DEFT_SRC})
+  target_link_libraries(test_deft_attention gtest_main gtest)
+  target_link_libraries(test_deft_attention ${CUDAToolkit_LIBRARIES})
+  target_include_directories(test_deft_attention PRIVATE ${FLASHINFER_DIR}/src)
+  add_dependencies(test_deft_attention dispatch_inc)
+  target_link_libraries(test_deft_attention decode_kernels)
+  add_test(NAME test_deft_attention COMMAND test_deft_attention)
+endif()
