@@ -16,8 +16,7 @@
 ## TL;DR
 We propose DeFT, an IO-aware attention algorithm for efficient tree-structured interactions with LLMs by optimizing QKV grouping and attention calculation.
 
-[<a href="https://openreview.net/forum?id=2c7pfOqu9k">Openreview</a>]|[<a href="https://arxiv.org/abs/2404.00242
-magicpig-llm">Arxiv</a>]
+[<a href="https://openreview.net/forum?id=2c7pfOqu9k">OpenReview</a>]|[<a href="https://arxiv.org/abs/2404.00242">Arxiv</a>]
 </div>
 <br>
 
@@ -59,6 +58,7 @@ Large language models (LLMs) are increasingly employed for complex tasks that pr
       - [Efficiency](#efficiency)
       - [Functionality](#functionality)
   - [Citation](#citation)
+  - [Acknowledgement](#acknowledgement)
 
 ## Folder Structure
 
@@ -266,3 +266,6 @@ year={2025},
 url={https://openreview.net/forum?id=2c7pfOqu9k}
 }
 ```
+
+## Acknowledgement
+DeFT builds upon and extends the foundational framework of an early version of SGLang, which served as our initial testbed. Additionally, we have incorporated certain implementations of activation functions and layer normalization from Flashinfer. Thank  Lu Ye(Microsoft) for discussion, and you should read his wonderful work--[ChunkAttention](https://arxiv.org/abs/2402.15220). We are grateful to the contributors of these projects for their valuable work, which has significantly facilitated our research and development efforts. 

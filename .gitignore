@@ -149,3 +149,5 @@ dmypy.json
 *.nsys-rep
 
 .vscode
+DeFT/deft/.DS_Store
+DeFT/.DS_Store
