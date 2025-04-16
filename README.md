@@ -16,7 +16,7 @@
 ## TL;DR
 We propose DeFT, an IO-aware attention algorithm for efficient tree-structured interactions with LLMs by optimizing QKV grouping and attention calculation.
 
-[<a href="https://openreview.net/forum?id=2c7pfOqu9k">OpenReview</a>]|[<a href="https://arxiv.org/abs/2404.00242">Arxiv</a>]
+[<a href="https://openreview.net/forum?id=2c7pfOqu9k">OpenReview</a>]|[<a href="https://arxiv.org/abs/2404.00242">Arxiv</a>]｜[<a href="/assets/DeFT_ICLR_25_poster.pdf">Poster</a>]
 </div>
 <br>
 
