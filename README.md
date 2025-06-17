@@ -1,6 +1,7 @@
 <div align="center">
 <img src="assets/DeFT.jpeg" alt="logo" width="200"></img>
 </div>
+<a href="https://deepwiki.com/LINs-lab/DeFT"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 
 --------------------------------------------------------------------------------
 
